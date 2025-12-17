@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Neon Bird</title>
+
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;
+    background: black;
+    font-family: Arial, sans-serif;
+}
+
+/* AÇILIŞ NEON EFEKTİ */
+#intro {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle, #00ffff, black);
+    animation: introFade 1.5s forwards;
+    z-index: 10;
+}
+
+@keyframes introFade {
+    0% { opacity: 1; }
+    100% { opacity: 0; visibility: hidden; }
+}
+
+/* ARKA PLAN FOTO */
+#bg {
+    position: fixed;
+    inset: 0;
+    background: url("db470512-40ed-4d8f-a48d-f092a7bdf3f2.jpeg") center/cover no-repeat;
+    filter: brightness(0.45) blur(1px);
+}
+
+/* KUŞ */
+#bird {
+    position: absolute;
+    top: 30%;
+    left: -120px;
+    font-size: 70px;
+    animation: fly 9s linear infinite;
+    text-shadow: 0 0 15px cyan, 0 0 35px magenta;
+}
+
+@keyframes fly {
+    from { left: -120px; }
+    to { left: 110%; }
+}
+
+/* ANLAMSIZ ŞARKI */
+#song {
+    position: absolute;
+    top: 12%;
+    width: 100%;
+    text-align: center;
+    color: cyan;
+    font-size: 20px;
+    animation: flicker 1.2s infinite;
+}
+
+@keyframes flicker {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* OK */
+#cursor {
+    position: absolute;
+    bottom: 45%;
+    width: 100%;
+    text-align: center;
+    font-size: 55px;
+    color: white;
+    animation: bounce 1s infinite;
+}
+
+@keyframes bounce {
+    0% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+    100% { transform: translateY(0); }
+}
+
+/* MESAJ */
+#message {
+    position: absolute;
+    top: 60%;
+    width: 100%;
+    text-align: center;
+    font-size: 30px;
+    opacity: 0;
+    color: hotpink;
+    text-shadow:
+      0 0 10px hotpink,
+      0 0 30px magenta,
+      0 0 40px cyan;
+    transition: opacity 1s, transform 1s;
+    transform: scale(0.9);
+}
+</style>
+</head>
+
+<body>
+
+<div id="intro"></div>
+<div id="bg"></div>
+
+<div id="song">la zu mi ka bi 🎵</div>
+<div id="bird">🐦</div>
+<div id="cursor">⬆️ Вверх</div>
+
+<div id="message">
+Я очень тебя люблю, Маша<br>
+Прости меня
+</div>
+
+<script>
+// DOKUNMATİK YUKARI KAYDIRMA
+let startY = 0;
+
+document.addEventListener("touchstart", e => {
+    startY = e.touches[0].clientY;
+});
+
+document.addEventListener("touchend", e => {
+    let endY = e.changedTouches[0].clientY;
+    if (startY - endY > 80) {
+        const msg = document.getElementById("message");
+        msg.style.opacity = 1;
+        msg.style.transform = "scale(1)";
+        playBird();
+    }
+});
+
+// RASTGELE ANLAMSIZ ŞARKI
+const syllables = ["la", "zu", "mi", "ka", "bi", "ru"];
+setInterval(() => {
+    document.getElementById("song").innerText =
+        syllables.sort(() => 0.5 - Math.random())
+        .slice(0, 5).join(" ") + " 🎶";
+}, 700);
+
+// KUŞ SESİ (Web Audio API)
+function playBird() {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    for (let i = 0; i < 5; i++) {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(900 + Math.random()*600, ctx.currentTime);
+        gain.gain.setValueAtTime(0.15, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(ctx.currentTime + i * 0.15);
+        osc.stop(ctx.currentTime + i * 0.3);
+    }
+}
+</script>
+
+</body>
+</html>
